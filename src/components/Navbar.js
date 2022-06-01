@@ -5,6 +5,7 @@ import { Button, Navbar, Nav, NavDropdown, Container, Form, FormControl } from "
 export default function NavigationBar({ recipes }) {
   // The NavBar is being rendered with React Bootstrap, and for each element in the dropdown menus
   // we map the recipes array (with all recipes) to generate a component link that takes the user to the page of the selected recipe/wine
+  console.log(recipes)
   return (
     <header>
       <Navbar bg="light" expand="lg">

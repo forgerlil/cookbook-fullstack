@@ -5,11 +5,11 @@ export default function Winecard ({wine}) {
   return (
     <div className="col-12 col-lg-6 mb-4 wine-card">
       <div className="card wine-card-style">
-        <img className="card-img-top img-fluid" src={wine.winePairingImage.fields.file.url} alt="Wine suggestion" />
+        <img className="card-img-top img-fluid" src={wine.wine_image_url} alt="Wine suggestion" />
           <div className="card-body">
-            <h5 className="card-title">{wine.winePairingName}</h5> 
-              <p className="card-text winecard-text">{wine.winePairingDescription}</p>
-              <a href={wine.winePairingUrl} className="btn btn-primary btn-block">Order our wine suggestion</a>                 
+            <h5 className="card-title">{wine.wine_name}</h5> 
+              <p className="card-text winecard-text">{wine.wine_description}</p>
+              <a href={wine.wine_url} className="btn btn-primary btn-block">Order our wine suggestion</a>                 
           </div>
       </div>
     </div>

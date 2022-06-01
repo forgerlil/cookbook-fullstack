@@ -1,61 +1,40 @@
 import Winecard from "./Winecard";
-import LinkCards from './Linkcards';
-import { useEffect, useRef } from 'react';
-import { BLOCKS } from "@contentful/rich-text-types";
-import { documentToReactComponents } from "@contentful/rich-text-react-renderer";
+import LinkCards from "./Linkcards";
+import { useEffect, useRef } from "react";
 
 function IngrTable({ recipe }) {
-  const ingredients = recipe.fields.recipeIngredients;
-
-  //Contentful rich text rendering
-  const options = {
-    renderNode: {
-      // Rendering a table inside rich text here. Since Contentful doesn't provide a semantic html table (which we need for Bootstrap styling)
-      // we have to pass the first row inside <thead> and the remainder inside <tbody>
-      [BLOCKS.TABLE]: (node, children) => (
-        <table className="table table-bordered table-striped">
-          <thead>{children[0]}</thead>
-          <tbody>{children.slice(1)}</tbody>
-        </table>
-      ),
-
-      // We want three rows in this table, and all apart from the header need a checkbox inside. Since checkboxes can't be added in Contenful,
-      // we have to create an extra row manually, add static content for the header row, and checkboxes for the body rows
-      [BLOCKS.TABLE_ROW]: (node, children) => {
-        const isHeader = children.some((child) => child.type === "th");
-
-        return isHeader ? (
-          <tr>
-            <th>
-              <p>Add to Shopping Cart</p>
-            </th>
-            {children}
-          </tr>
-        ) : (
-          <tr>
+  return (
+    <table className="table table-bordered table-striped">
+      <thead>
+        <tr>
+          <th>Add to Shopping Cart</th>
+          <th>Ingredient</th>
+          <th>Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        {recipe.map((ingredient, index) => {
+          return (
+          <tr key={index}>
             <td>
               <input
                 type="checkbox"
                 aria-label="Checkbox for following text input"
               />
             </td>
-            {children}
+            <td>{ingredient.name}</td>
+            <td>{ingredient.amount}</td>
           </tr>
-        );
-      },
-    },
-  };
-
-  //And finally we render the table with Contentful's rich text renderer, passing the table object as the first argument
-  //and our rendering setup as the second argument
-  return (
-      documentToReactComponents(ingredients, options)
+          )
+        })}
+      </tbody>
+    </table>
   );
 }
 
-//Component to map a list out of the recipe description string 
+//Component to map a list out of the recipe description string
 function PrepSteps({ prep }) {
-  const makeList = prep.split("\n");
+  const makeList = prep.split("\\n");
   return (
     <ol>
       {makeList.map((eachStep, index) => {
@@ -67,34 +46,40 @@ function PrepSteps({ prep }) {
 
 // Main recipe gets all recipes to pass to Linkcards and one recipe to populate its content
 export default function MainRecipe({ allRecipes, recipe }) {
-  const mainRecipeDiv = useRef()
+  const recipePath = recipe.url_path;
+  const recipeIngredients = allRecipes.ingredientsForRecipe[recipePath];
+  const mainRecipeDiv = useRef();
 
   // Once the node is rendered, the page scrolls to center it in the screen
   useEffect(() => {
     // getNode(mainRecipeDiv.current) --> This would be used to pass the node reference for a parent component, a function prop getNode would
     // need to be passed to this component for it to be accessible in the parent component (<App />)
-    mainRecipeDiv.current.scrollIntoView({behavior: "smooth"})
-  }, [])
+    mainRecipeDiv.current.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
-  // Rendering a card with an image, rich text table, preparation steps, a linked/fixed Winecard component, 
+  // Rendering a card with an image, rich text table, preparation steps, a linked/fixed Winecard component,
   // and Linkcards with the remaining recipes
   return (
     <>
-      <div ref={mainRecipeDiv} className="card col-12 col-lg-6" id="main-recipe-card">
+      <div
+        ref={mainRecipeDiv}
+        className="card col-12 col-lg-6"
+        id="main-recipe-card"
+      >
         <img
-          src={recipe.fields.recipePicture[0].fields.file.url}
+          src={recipe.recipe_image_url}
           className="card-img-top img-fluid main-recipe-img"
-          alt={recipe.fields.recipePicture[0].fields.description}
+          alt={recipe.recipe_image_title}
         />
         <div className="card-body">
-          <h5 className="card-title">How to make {recipe.fields.recipeName}</h5>
-          <IngrTable recipe={recipe} />
+          <h5 className="card-title">How to make {recipe.recipe_name}</h5>
+          <IngrTable recipe={recipeIngredients} />
           <h6>Preparation instructions</h6>
-          <PrepSteps prep={recipe.fields.recipeDescription} />
+          <PrepSteps prep={recipe.recipe_description} />
         </div>
       </div>
-      <Winecard wine={recipe.fields.wine.fields} />
-      <LinkCards giveNode={mainRecipeDiv && mainRecipeDiv.current} recipe={allRecipes} />
+      <Winecard wine={recipe} />
+      <LinkCards giveNode={mainRecipeDiv && mainRecipeDiv.current} recipe={allRecipes.recipesAndWines} />
     </>
   );
 }
